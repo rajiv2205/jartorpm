@@ -1,0 +1,166 @@
+#!/bin/bash
+
+# a valid username "SERVICE_USER" must be present to start service.
+
+
+SERVICE_NAME='testjarservice'
+
+SELF=$(cd $(dirname $0); pwd -P)/$(basename $0)
+
+PID_PATH_NAME='/var/run/'$SERVICE_NAME'/'$SERVICE_NAME'.pid'
+
+JAR_CLASS='testjar.jar'
+
+SERVICE_PATH='/usr/local/testjar'
+
+SERVICE_USER='testjar'
+
+
+
+if [ $(id -u) != "0" ]; 
+then
+   echo "root privileges required" 1>&2
+   exit 1
+
+fi
+
+
+service_pid() 
+{
+
+        echo `ps -eaf |grep $SERVICE_PATH |grep -v grep |awk '{print $2}'`
+
+        
+}
+
+
+user_exists()
+{
+       
+ if id -u $SERVICE_USER >/dev/null 2>&1; then
+ 
+       	return 0
+        
+else
+               
+ 	return 1
+        
+fi
+
+}
+
+
+
+start_service()
+{
+    
+echo "Starting $SERVICE_NAME ..."
+        
+PID=$(service_pid)
+        
+if [ ! -f $PID_PATH_NAME ] && [[ "$PID" == "" ]] && user_exists ; then
+
+          su $SERVICE_USER -c " nohup java -jar $SERVICE_PATH/$JAR_CLASS  --port 8090 > $SERVICE_PATH/nohup.out 2>&1 < /dev/null &"
+
+            
+          ps -eaf |grep $SERVICE_PATH |grep -v grep |awk '{print $2}'  > $PID_PATH_NAME
+        
+fi
+        
+status_check
+
+}
+
+
+stop_service()
+{
+    
+PID=$(service_pid)
+    
+if [ -f $PID_PATH_NAME ] && [[ "$PID" != "" ]]  ; then
+
+            PID=$(cat $PID_PATH_NAME);
+
+            echo "$SERVICE_NAME stopping ..."
+
+            kill $PID;
+
+            echo "$SERVICE_NAME stopped ..."
+
+            rm $PID_PATH_NAME
+
+        elif [ -f $PID_PATH_NAME ] ; then
+
+            rm $PID_PATH_NAME
+
+            echo "PID file removed"
+
+            echo "$SERVICE_NAME stopping ..."
+
+            echo "$SERVICE_NAME stopped ..."
+
+
+        else
+
+            status_check
+
+        fi
+
+}
+
+status_check()
+{
+
+    PID=$(service_pid)
+
+    if [ -f $PID_PATH_NAME ] && [[ "$PID" != "" ]]; then
+
+            echo "$SERVICE_NAME is running ..."
+
+            return 1
+
+        else
+
+            echo "$SERVICE_NAME is not running ..."
+
+            return 0
+
+        fi
+
+}
+
+
+case $1 in
+    start)
+
+        start_service
+    ;;
+
+    stop)
+
+        stop_service
+    ;;
+
+    status)
+
+        status_check
+    ;;
+
+    restart)
+
+        stop_service
+
+        start_service
+    ;;
+
+    *)
+
+        echo "Usage: $SELF start|stop|restart|status"
+
+        exit 1
+        ;;
+
+
+esac
+
+

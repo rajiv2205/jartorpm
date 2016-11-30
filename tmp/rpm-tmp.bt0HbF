@@ -1,0 +1,36 @@
+#!/bin/sh
+
+  RPM_SOURCE_DIR="/home/rpmbuild/rpm/SOURCES"
+  RPM_BUILD_DIR="/home/rpmbuild/rpm/BUILD"
+  RPM_OPT_FLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m64 -mtune=generic"
+  RPM_ARCH="x86_64"
+  RPM_OS="linux"
+  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS
+  RPM_DOC_DIR="/usr/share/doc"
+  export RPM_DOC_DIR
+  RPM_PACKAGE_NAME="Spring3HibernateApp"
+  RPM_PACKAGE_VERSION="2.0.1"
+  RPM_PACKAGE_RELEASE="1.el6"
+  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE
+  LANG=C
+  export LANG
+  unset CDPATH DISPLAY ||:
+  RPM_BUILD_ROOT="/home/rpmbuild/rpm/BUILDROOT/Spring3HibernateApp-2.0.1-1.el6.x86_64"
+  export RPM_BUILD_ROOT
+  
+  PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/lib64/pkgconfig:/usr/share/pkgconfig"
+  export PKG_CONFIG_PATH
+  
+  set -x
+  umask 022
+  cd "/home/rpmbuild/rpm/BUILD"
+LANG=C
+export LANG
+unset DISPLAY
+
+pwd
+cd /home/rpmbuild/rpm/SOURCES
+git clone https://github.com/OpsTree/ContinuousIntegration.git
+echo "cloned successfully"
+
+exit 0
